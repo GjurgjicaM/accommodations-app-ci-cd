@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:17.4
+#    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: emt
+      POSTGRES_PASSWORD: emt
+      POSTGRES_DB: accommodations
+    volumes:
+      - emt-lab-b_pgdata:/var/lib/postgresql/data
+      - ./emt-lab-B-backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./emt-lab-B-backend/views.sql:/docker-entrypoint-initdb.d/views.sql
+    ports:
+      - "2345:5432"
+  backend:
+    build: ./emt-lab-B-backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/accommodations
+      SPRING_DATASOURCE_USERNAME: emt
+      SPRING_DATASOURCE_PASSWORD: emt
+    ports:
+      - "9090:9090"
+
+  frontend:
+    build: ./emt-lab-B-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  emt-lab-b_pgdata:
